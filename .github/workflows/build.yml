@@ -64,6 +64,130 @@ jobs:
             echo '<manifest xmlns:android="http://schemas.android.com/apk/res/android"><uses-permission android:name="android.permission.INTERNET"/><uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/><uses-feature android:name="android.software.leanback" android:required="false"/><uses-feature android:name="android.hardware.touchscreen" android:required="false"/><application android:allowBackup="true" android:icon="@android:drawable/sym_def_app_icon" android:label="Heedar TV" android:supportsRtl="true" android:theme="@android:style/Theme.DeviceDefault.NoActionBar" android:usesCleartextTraffic="true"><activity android:name=".MainActivity" android:exported="true" android:windowSoftInputMode="adjustPan"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/><category android:name="android.intent.category.LEANBACK_LAUNCHER"/></intent-filter></activity><activity android:name=".player.PlayerActivity" android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|smallestScreenSize" android:exported="false" android:theme="@android:style/Theme.NoTitleBar.Fullscreen"/></application></manifest>' > app/src/main/AndroidManifest.xml
           fi
 
+          python3 -c "
+          import os
+          target = 'app/src/main/java/com/heedar/tv/settings/AppPreferences.kt'
+          os.makedirs(os.path.dirname(target), exist_ok=True)
+          if not os.path.exists(target):
+              with open(target, 'w') as f:
+                  f.write('''package com.heedar.tv.settings
+
+          import android.content.Context
+          import android.graphics.Color
+
+          class AppPreferences(context: Context) {
+              private val values = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+
+              var theme: String
+                  get() = values.getString(KEY_THEME, THEME_OCEAN) ?: THEME_OCEAN
+                  set(value) { values.edit().putString(KEY_THEME, value.takeIf { it in THEMES } ?: THEME_OCEAN).apply() }
+
+              var density: String
+                  get() = values.getString(KEY_DENSITY, DENSITY_COMFORTABLE) ?: DENSITY_COMFORTABLE
+                  set(value) { values.edit().putString(KEY_DENSITY, value.takeIf { it in DENSITIES } ?: DENSITY_COMFORTABLE).apply() }
+
+              var videoScale: String
+                  get() = values.getString(KEY_VIDEO_SCALE, SCALE_FIT) ?: SCALE_FIT
+                  set(value) { values.edit().putString(KEY_VIDEO_SCALE, value.takeIf { it in VIDEO_SCALES } ?: SCALE_FIT).apply() }
+
+              var autoPlay: Boolean
+                  get() = values.getBoolean(KEY_AUTOPLAY, true)
+                  set(value) { values.edit().putBoolean(KEY_AUTOPLAY, value).apply() }
+
+              var keepScreenOn: Boolean
+                  get() = values.getBoolean(KEY_KEEP_SCREEN_ON, true)
+                  set(value) { values.edit().putBoolean(KEY_KEEP_SCREEN_ON, value).apply() }
+
+              var controlsTimeoutMs: Int
+                  get() = values.getInt(KEY_CONTROLS_TIMEOUT, 5_000).takeIf { it in CONTROL_TIMEOUTS } ?: 5_000
+                  set(value) { values.edit().putInt(KEY_CONTROLS_TIMEOUT, value.takeIf { it in CONTROL_TIMEOUTS } ?: 5_000).apply() }
+
+              val densityScale: Float
+                  get() = when (density) {
+                      DENSITY_COMPACT -> 0.88f
+                      DENSITY_LARGE -> 1.15f
+                      else -> 1.0f
+                  }
+
+              val backgroundColor: Int
+                  get() = when (theme) {
+                      THEME_GRAPHITE -> Color.rgb(15, 18, 24)
+                      THEME_PURPLE -> Color.rgb(16, 12, 28)
+                      else -> Color.rgb(8, 13, 26)
+                  }
+
+              val surfaceColor: Int
+                  get() = when (theme) {
+                      THEME_GRAPHITE -> Color.rgb(31, 37, 47)
+                      THEME_PURPLE -> Color.rgb(37, 27, 58)
+                      else -> Color.rgb(24, 34, 54)
+                  }
+
+              val buttonColor: Int
+                  get() = when (theme) {
+                      THEME_GRAPHITE -> Color.rgb(43, 52, 65)
+                      THEME_PURPLE -> Color.rgb(54, 39, 82)
+                      else -> Color.rgb(31, 51, 79)
+                  }
+
+              val accentColor: Int
+                  get() = when (theme) {
+                      THEME_GRAPHITE -> Color.rgb(125, 211, 252)
+                      THEME_PURPLE -> Color.rgb(195, 146, 255)
+                      else -> Color.rgb(99, 216, 255)
+                  }
+
+              fun themeLabel(): String = when (theme) {
+                  THEME_GRAPHITE -> \"رمادي داكن\"
+                  THEME_PURPLE -> \"بنفسجي ليلي\"
+                  else -> \"أزرق محيطي\"
+              }
+
+              fun densityLabel(): String = when (density) {
+                  DENSITY_COMPACT -> \"مضغوط\"
+                  DENSITY_LARGE -> \"كبير\"
+                  else -> \"مريح\"
+              }
+
+              fun videoScaleLabel(): String = when (videoScale) {
+                  SCALE_CROP -> \"ملء مع قص الأطراف\"
+                  SCALE_STRETCH -> \"تمديد لملء الشاشة\"
+                  else -> \"احتواء كامل الصورة\"
+              }
+
+              fun controlsTimeoutLabel(): String = when (controlsTimeoutMs) {
+                  3_000 -> \"3 ثوانٍ\"
+                  8_000 -> \"8 ثوانٍ\"
+                  else -> \"5 ثوانٍ\"
+              }
+
+              companion object {
+                  const val THEME_OCEAN = \"ocean\"
+                  const val THEME_GRAPHITE = \"graphite\"
+                  const val THEME_PURPLE = \"purple\"
+                  const val DENSITY_COMPACT = \"compact\"
+                  const val DENSITY_COMFORTABLE = \"comfortable\"
+                  const val DENSITY_LARGE = \"large\"
+                  const val SCALE_FIT = \"fit\"
+                  const val SCALE_CROP = \"crop\"
+                  const val SCALE_STRETCH = \"stretch\"
+                  val THEMES = setOf(THEME_OCEAN, THEME_GRAPHITE, THEME_PURPLE)
+                  val DENSITIES = setOf(DENSITY_COMPACT, DENSITY_COMFORTABLE, DENSITY_LARGE)
+                  val VIDEO_SCALES = setOf(SCALE_FIT, SCALE_CROP, SCALE_STRETCH)
+                  val CONTROL_TIMEOUTS = setOf(3_000, 5_000, 8_000)
+
+                  private const val PREFS_NAME = \"heedar_user_preferences_v1\"
+                  private const val KEY_THEME = \"theme\"
+                  private const val KEY_DENSITY = \"density\"
+                  private const val KEY_VIDEO_SCALE = \"video_scale\"
+                  private const val KEY_AUTOPLAY = \"player_autoplay\"
+                  private const val KEY_KEEP_SCREEN_ON = \"player_keep_screen_on\"
+                  private const val KEY_CONTROLS_TIMEOUT = \"player_controls_timeout_ms\"
+              }
+          }
+          ''')
+          "
+
           if [ ! -f "gradlew" ]; then
             gradle wrapper --gradle-version 8.9
           fi
