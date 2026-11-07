@@ -27,6 +27,43 @@ jobs:
           if [ -d "Heedar-TV-independent" ]; then
             cp -r Heedar-TV-independent/* . || true
           fi
+
+          SRC_DIR=$(find . -type d -name "src" | head -n 1)
+          if [ -n "$SRC_DIR" ] && [ "$SRC_DIR" != "./app/src" ]; then
+            mkdir -p app
+            cp -r "$SRC_DIR" app/ || true
+          fi
+
+          if [ ! -f "settings.gradle.kts" ]; then
+            echo 'pluginManagement { repositories { google(); mavenCentral(); gradlePluginPortal() } }' > settings.gradle.kts
+            echo 'dependencyResolutionManagement { repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS); repositories { google(); mavenCentral() } }' >> settings.gradle.kts
+            echo 'rootProject.name = "Heedar-TV-Independent"' >> settings.gradle.kts
+            echo 'include(":app")' >> settings.gradle.kts
+          fi
+
+          if [ ! -f "build.gradle.kts" ]; then
+            echo 'plugins { id("com.android.application") version "8.7.3" apply false; id("org.jetbrains.kotlin.android") version "2.0.21" apply false }' > build.gradle.kts
+          fi
+
+          if [ ! -f "gradle.properties" ]; then
+            echo 'org.gradle.jvmargs=-Xmx3g -Dfile.encoding=UTF-8' > gradle.properties
+            echo 'org.gradle.parallel=true' >> gradle.properties
+            echo 'android.useAndroidX=true' >> gradle.properties
+            echo 'kotlin.code.style=official' >> gradle.properties
+          fi
+
+          mkdir -p app
+          if [ ! -f "app/build.gradle.kts" ]; then
+            echo 'plugins { id("com.android.application"); id("org.jetbrains.kotlin.android") }' > app/build.gradle.kts
+            echo 'android { namespace = "com.heedar.tv"; compileSdk = 35; defaultConfig { applicationId = "com.heedar.tv"; minSdk = 23; targetSdk = 35; versionCode = 10; versionName = "0.10.0-independent" }; compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }; kotlinOptions { jvmTarget = "17" } }' >> app/build.gradle.kts
+            echo 'dependencies { implementation("androidx.media3:media3-exoplayer:1.5.0"); implementation("androidx.media3:media3-exoplayer-hls:1.5.0"); implementation("androidx.media3:media3-ui:1.5.0") }' >> app/build.gradle.kts
+          fi
+
+          if [ ! -f "app/src/main/AndroidManifest.xml" ]; then
+            mkdir -p app/src/main
+            echo '<manifest xmlns:android="http://schemas.android.com/apk/res/android"><uses-permission android:name="android.permission.INTERNET"/><uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/><uses-feature android:name="android.software.leanback" android:required="false"/><uses-feature android:name="android.hardware.touchscreen" android:required="false"/><application android:allowBackup="true" android:icon="@android:drawable/sym_def_app_icon" android:label="Heedar TV" android:supportsRtl="true" android:theme="@android:style/Theme.DeviceDefault.NoActionBar" android:usesCleartextTraffic="true"><activity android:name=".MainActivity" android:exported="true" android:windowSoftInputMode="adjustPan"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/><category android:name="android.intent.category.LEANBACK_LAUNCHER"/></intent-filter></activity><activity android:name=".player.PlayerActivity" android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|smallestScreenSize" android:exported="false" android:theme="@android:style/Theme.NoTitleBar.Fullscreen"/></application></manifest>' > app/src/main/AndroidManifest.xml
+          fi
+
           if [ ! -f "gradlew" ]; then
             gradle wrapper --gradle-version 8.9
           fi
