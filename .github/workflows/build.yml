@@ -19,16 +19,19 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
       - name: Build Android APK
         run: |
-          find . -name "*.zip" -exec unzip -o {} \; || true
-          if [ ! -f "gradlew" ]; then
-            DIR=$(find . -name "gradlew" -exec dirname {} \; | head -n 1)
-            if [ -n "$DIR" ]; then cp -r $DIR/* . ; fi
+          if [ -d "Heedar-TV-independent" ]; then
+            cp -r Heedar-TV-independent/* . || true
           fi
-          chmod +x gradlew || true
-          yes | sdkmanager --licenses || true
-          ./gradlew assembleDebug
+          if [ ! -f "gradlew" ]; then
+            gradle wrapper --gradle-version 8.9
+          fi
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
