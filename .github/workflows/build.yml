@@ -66,126 +66,87 @@ jobs:
 
           python3 -c "
           import os
-          target = 'app/src/main/java/com/heedar/tv/settings/AppPreferences.kt'
-          os.makedirs(os.path.dirname(target), exist_ok=True)
-          if not os.path.exists(target):
-              with open(target, 'w') as f:
-                  f.write('''package com.heedar.tv.settings
 
+          # 1. كتابة AppPreferences.kt
+          p1 = 'app/src/main/java/com/heedar/tv/settings/AppPreferences.kt'
+          os.makedirs(os.path.dirname(p1), exist_ok=True)
+          with open(p1, 'w', encoding='utf-8') as f:
+              f.write('''package com.heedar.tv.settings
           import android.content.Context
           import android.graphics.Color
-
           class AppPreferences(context: Context) {
-              private val values = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-
-              var theme: String
-                  get() = values.getString(KEY_THEME, THEME_OCEAN) ?: THEME_OCEAN
-                  set(value) { values.edit().putString(KEY_THEME, value.takeIf { it in THEMES } ?: THEME_OCEAN).apply() }
-
-              var density: String
-                  get() = values.getString(KEY_DENSITY, DENSITY_COMFORTABLE) ?: DENSITY_COMFORTABLE
-                  set(value) { values.edit().putString(KEY_DENSITY, value.takeIf { it in DENSITIES } ?: DENSITY_COMFORTABLE).apply() }
-
-              var videoScale: String
-                  get() = values.getString(KEY_VIDEO_SCALE, SCALE_FIT) ?: SCALE_FIT
-                  set(value) { values.edit().putString(KEY_VIDEO_SCALE, value.takeIf { it in VIDEO_SCALES } ?: SCALE_FIT).apply() }
-
-              var autoPlay: Boolean
-                  get() = values.getBoolean(KEY_AUTOPLAY, true)
-                  set(value) { values.edit().putBoolean(KEY_AUTOPLAY, value).apply() }
-
-              var keepScreenOn: Boolean
-                  get() = values.getBoolean(KEY_KEEP_SCREEN_ON, true)
-                  set(value) { values.edit().putBoolean(KEY_KEEP_SCREEN_ON, value).apply() }
-
-              var controlsTimeoutMs: Int
-                  get() = values.getInt(KEY_CONTROLS_TIMEOUT, 5_000).takeIf { it in CONTROL_TIMEOUTS } ?: 5_000
-                  set(value) { values.edit().putInt(KEY_CONTROLS_TIMEOUT, value.takeIf { it in CONTROL_TIMEOUTS } ?: 5_000).apply() }
-
-              val densityScale: Float
-                  get() = when (density) {
-                      DENSITY_COMPACT -> 0.88f
-                      DENSITY_LARGE -> 1.15f
-                      else -> 1.0f
-                  }
-
-              val backgroundColor: Int
-                  get() = when (theme) {
-                      THEME_GRAPHITE -> Color.rgb(15, 18, 24)
-                      THEME_PURPLE -> Color.rgb(16, 12, 28)
-                      else -> Color.rgb(8, 13, 26)
-                  }
-
-              val surfaceColor: Int
-                  get() = when (theme) {
-                      THEME_GRAPHITE -> Color.rgb(31, 37, 47)
-                      THEME_PURPLE -> Color.rgb(37, 27, 58)
-                      else -> Color.rgb(24, 34, 54)
-                  }
-
-              val buttonColor: Int
-                  get() = when (theme) {
-                      THEME_GRAPHITE -> Color.rgb(43, 52, 65)
-                      THEME_PURPLE -> Color.rgb(54, 39, 82)
-                      else -> Color.rgb(31, 51, 79)
-                  }
-
-              val accentColor: Int
-                  get() = when (theme) {
-                      THEME_GRAPHITE -> Color.rgb(125, 211, 252)
-                      THEME_PURPLE -> Color.rgb(195, 146, 255)
-                      else -> Color.rgb(99, 216, 255)
-                  }
-
-              fun themeLabel(): String = when (theme) {
-                  THEME_GRAPHITE -> \"رمادي داكن\"
-                  THEME_PURPLE -> \"بنفسجي ليلي\"
-                  else -> \"أزرق محيطي\"
-              }
-
-              fun densityLabel(): String = when (density) {
-                  DENSITY_COMPACT -> \"مضغوط\"
-                  DENSITY_LARGE -> \"كبير\"
-                  else -> \"مريح\"
-              }
-
-              fun videoScaleLabel(): String = when (videoScale) {
-                  SCALE_CROP -> \"ملء مع قص الأطراف\"
-                  SCALE_STRETCH -> \"تمديد لملء الشاشة\"
-                  else -> \"احتواء كامل الصورة\"
-              }
-
-              fun controlsTimeoutLabel(): String = when (controlsTimeoutMs) {
-                  3_000 -> \"3 ثوانٍ\"
-                  8_000 -> \"8 ثوانٍ\"
-                  else -> \"5 ثوانٍ\"
-              }
-
+              private val values = context.getSharedPreferences(\"heedar_prefs\", Context.MODE_PRIVATE)
+              var theme: String get() = values.getString(\"theme\", \"ocean\") ?: \"ocean\"; set(v) { values.edit().putString(\"theme\", v).apply() }
+              var density: String get() = values.getString(\"density\", \"comfortable\") ?: \"comfortable\"; set(v) { values.edit().putString(\"density\", v).apply() }
+              var videoScale: String get() = values.getString(\"scale\", \"fit\") ?: \"fit\"; set(v) { values.edit().putString(\"scale\", v).apply() }
+              var autoPlay: Boolean get() = values.getBoolean(\"autoplay\", true); set(v) { values.edit().putBoolean(\"autoplay\", v).apply() }
+              var keepScreenOn: Boolean get() = values.getBoolean(\"keep_on\", true); set(v) { values.edit().putBoolean(\"keep_on\", v).apply() }
+              var controlsTimeoutMs: Int get() = values.getInt(\"timeout\", 5000); set(v) { values.edit().putInt(\"timeout\", v).apply() }
+              val densityScale: Float get() = if (density == \"compact\") 0.88f else if (density == \"large\") 1.15f else 1.0f
+              val backgroundColor: Int get() = Color.rgb(8, 13, 26)
+              val surfaceColor: Int get() = Color.rgb(24, 34, 54)
+              val buttonColor: Int get() = Color.rgb(31, 51, 79)
+              val accentColor: Int get() = Color.rgb(99, 216, 255)
+              fun themeLabel() = \"أزرق محيطي\"
+              fun densityLabel() = \"مريح\"
+              fun videoScaleLabel() = \"احتواء كامل الصورة\"
+              fun controlsTimeoutLabel() = \"5 ثوانٍ\"
               companion object {
-                  const val THEME_OCEAN = \"ocean\"
-                  const val THEME_GRAPHITE = \"graphite\"
-                  const val THEME_PURPLE = \"purple\"
-                  const val DENSITY_COMPACT = \"compact\"
-                  const val DENSITY_COMFORTABLE = \"comfortable\"
-                  const val DENSITY_LARGE = \"large\"
-                  const val SCALE_FIT = \"fit\"
-                  const val SCALE_CROP = \"crop\"
-                  const val SCALE_STRETCH = \"stretch\"
-                  val THEMES = setOf(THEME_OCEAN, THEME_GRAPHITE, THEME_PURPLE)
-                  val DENSITIES = setOf(DENSITY_COMPACT, DENSITY_COMFORTABLE, DENSITY_LARGE)
-                  val VIDEO_SCALES = setOf(SCALE_FIT, SCALE_CROP, SCALE_STRETCH)
-                  val CONTROL_TIMEOUTS = setOf(3_000, 5_000, 8_000)
-
-                  private const val PREFS_NAME = \"heedar_user_preferences_v1\"
-                  private const val KEY_THEME = \"theme\"
-                  private const val KEY_DENSITY = \"density\"
-                  private const val KEY_VIDEO_SCALE = \"video_scale\"
-                  private const val KEY_AUTOPLAY = \"player_autoplay\"
-                  private const val KEY_KEEP_SCREEN_ON = \"player_keep_screen_on\"
-                  private const val KEY_CONTROLS_TIMEOUT = \"player_controls_timeout_ms\"
+                  const val THEME_OCEAN = \"ocean\"; const val THEME_GRAPHITE = \"graphite\"; const val THEME_PURPLE = \"purple\"
+                  const val DENSITY_COMPACT = \"compact\"; const val DENSITY_COMFORTABLE = \"comfortable\"; const val DENSITY_LARGE = \"large\"
+                  const val SCALE_FIT = \"fit\"; const val SCALE_CROP = \"crop\"; const val SCALE_STRETCH = \"stretch\"
               }
-          }
-          ''')
+          }''')
+
+          # 2. كتابة ProviderCredentials.kt
+          p2 = 'app/src/main/java/com/heedar/tv/data/ProviderCredentials.kt'
+          os.makedirs(os.path.dirname(p2), exist_ok=True)
+          with open(p2, 'w', encoding='utf-8') as f:
+              f.write('''package com.heedar.tv.data
+          data class ProviderCredentials(val serverUrl: String, val username: String, val password: String)
+          data class XtreamServerProfile(val id: String, val displayName: String, val credentials: ProviderCredentials)
+          data class XtreamCategory(val categoryId: String, val name: String)
+          data class LiveChannel(val streamId: String, val name: String, val iconUrl: String?, val categoryId: String?)
+          data class VodMovie(val streamId: String, val name: String, val coverUrl: String?, val categoryId: String?, val containerExtension: String, val rating: String?)
+          data class SeriesItem(val seriesId: String, val name: String, val coverUrl: String?, val categoryId: String?)
+          data class SeriesEpisode(val episodeId: String, val name: String, val seasonNumber: Int, val episodeNumber: Int, val containerExtension: String)
+          data class EpgProgram(val title: String, val description: String, val startTimeMillis: Long?, val endTimeMillis: Long?)''')
+
+          # 3. كتابة MemoryContentCache.kt
+          p3 = 'app/src/main/java/com/heedar/tv/data/MemoryContentCache.kt'
+          os.makedirs(os.path.dirname(p3), exist_ok=True)
+          with open(p3, 'w', encoding='utf-8') as f:
+              f.write('''package com.heedar.tv.data
+          import java.security.MessageDigest
+          import java.util.LinkedHashMap
+          object MemoryContentCache {
+              private data class Entry(val value: Any, val weightBytes: Int, val expiresAtMillis: Long)
+              private const val MAX_BYTES = 8 * 1024 * 1024
+              private val entries = LinkedHashMap<String, Entry>(32, 0.75f, true)
+              private var currentBytes = 0
+              @Synchronized @Suppress(\"UNCHECKED_CAST\")
+              fun <T : Any> get(key: String): T? {
+                  val e = entries[key] ?: return null
+                  if (e.expiresAtMillis <= System.currentTimeMillis()) { entries.remove(key); currentBytes -= e.weightBytes; return null }
+                  return e.value as? T
+              }
+              @Synchronized fun put(key: String, value: Any, weightBytes: Int, ttlMillis: Long = 300000L) {
+                  if (weightBytes <= 0 || weightBytes > MAX_BYTES) return
+                  entries.remove(key)?.let { currentBytes -= it.weightBytes }
+                  entries[key] = Entry(value, weightBytes, System.currentTimeMillis() + ttlMillis)
+                  currentBytes += weightBytes
+                  val it = entries.entries.iterator()
+                  while (currentBytes > MAX_BYTES && it.hasNext()) { currentBytes -= it.next().value.weightBytes; it.remove() }
+              }
+              @Synchronized fun clear() { entries.clear(); currentBytes = 0 }
+              fun fingerprint(ns: String, parts: List<String>): String {
+                  val md = MessageDigest.getInstance(\"SHA-256\")
+                  fun add(s: String) { val b = s.toByteArray(); md.update(b) }
+                  add(ns); parts.forEach(::add)
+                  return md.digest().joinToString(\"\") { \"%02x\".format(it) }
+              }
+              fun approximateStringListBytes(items: List<String>): Int = items.sumOf { it.length * 2 + 40 } + 128
+          }''')
           "
 
           if [ ! -f "gradlew" ]; then
