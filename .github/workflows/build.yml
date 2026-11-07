@@ -19,10 +19,7 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Prepare and Build
+      - name: Build Android APK
         run: |
           find . -name "*.zip" -exec unzip -o {} \; || true
           if [ ! -f "gradlew" ]; then
@@ -30,7 +27,8 @@ jobs:
             if [ -n "$DIR" ]; then cp -r $DIR/* . ; fi
           fi
           chmod +x gradlew || true
-          ./gradlew assembleDebug --no-daemon
+          yes | sdkmanager --licenses || true
+          ./gradlew assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
